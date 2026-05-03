@@ -25,6 +25,7 @@ services:
       - inception
     depends_on:
       - mariadb
+      - redis
     restart: always
 
   nginx:
@@ -40,6 +41,36 @@ services:
       - inception
     depends_on:
       - wordpress
+      - adminer
+      - redis
+      - static
+    restart: always
+
+  redis:
+    build:
+      context: ./requirements/redis
+    image: redis
+    container_name: redis
+    networks:
+      - inception
+    restart: always
+
+  adminer:
+    build:
+      context: ./requirements/adminer
+    image: adminer
+    container_name: adminer
+    networks:
+      - inception
+    restart: always
+
+  static:
+    build:
+      context: ./requirements/static
+    image: static
+    container_name: static
+    networks:
+      - inception
     restart: always
 
 volumes:
