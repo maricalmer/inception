@@ -3,3 +3,4 @@ srcs/.env
 
 # Secrets (subject explicitly mentions them)
 secrets/*
+
