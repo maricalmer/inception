@@ -76,13 +76,7 @@ docker compose up
 
 ## Docker Network
 
-A bridge network is used:
-
-```id="gn5u2c"
-srcs_inception
-```
-
-This allows containers to communicate using service names:
+A Docker bridge network created by docker-compose. This allows containers to communicate using service names:
 
 * `mariadb` → database host
 * `wordpress` → php-fpm service
