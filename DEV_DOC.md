@@ -59,7 +59,7 @@ Each image:
 
 ### Docker Compose
 
-The `docker-compose.yml` file defines:
+The `docker-compose.yaml` file defines:
 
 * Services
 * Volumes

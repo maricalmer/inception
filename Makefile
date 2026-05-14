@@ -1,4 +1,4 @@
-COMPOSE_FILE = srcs/docker-compose.yml
+COMPOSE_FILE = srcs/docker-compose.yaml
 DATA_DIR = /home/dlemaire/data
 
 all: up

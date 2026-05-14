@@ -23,7 +23,7 @@ Each container includes everything needed to run the service.
 
 ### Docker Compose
 
-Docker Compose allows defining and running multiple containers together using a single configuration file (`docker-compose.yml`).
+Docker Compose allows defining and running multiple containers together using a single configuration file (`docker-compose.yaml`).
 
 ### Image vs Container
 
@@ -75,7 +75,7 @@ All containers are connected through a Docker bridge network, allowing them to c
 .
 ├── Makefile
 ├── srcs/
-│   ├── docker-compose.yml
+│   ├── docker-compose.yaml
 │   ├── .env
 │   └── requirements/
 │       ├── nginx/
