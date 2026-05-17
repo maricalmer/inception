@@ -4,13 +4,70 @@
 
 This project implements a multi-container infrastructure using Docker Compose.
 
-The architecture is composed of three main services:
+The architecture is composed of these services:
 
 * NGINX (web server + SSL)
 * WordPress (PHP-FPM)
 * MariaDB (database)
+* Redis (cache)
+* Adminer (database administration)
+* Static site (bonus web service)
 
 Each service runs in its own container and communicates through a Docker network.
+
+---
+
+## Environment Setup From Scratch
+
+### Prerequisites
+
+Install the following tools on the VM:
+
+* Docker
+* Docker Compose
+* Make
+* Git
+
+### Clone the repository
+
+```sh
+git clone https://github.com/maricalmer/inception inception
+cd inception
+```
+
+### Configure environment variables
+
+Copy the example file and edit the non-sensitive runtime values:
+
+```sh
+cp srcs/.env.example srcs/.env
+```
+
+Then edit `srcs/.env`.
+
+The `.env` file stores values such as:
+
+* `DOMAIN_NAME`
+* `MYSQL_DATABASE`
+* `MYSQL_USER`
+* WordPress usernames and emails
+* Redis host and port
+
+Do not store passwords in `.env`.
+
+### Configure Docker secrets
+
+Create the local secret files expected by `srcs/docker-compose.yaml`:
+
+```sh
+mkdir -p secrets
+printf '%s' 'your_database_password' > secrets/mysql_password.txt
+printf '%s' 'your_database_root_password' > secrets/mysql_root_password.txt
+printf '%s' 'your_wordpress_admin_password' > secrets/wp_admin_password.txt
+printf '%s' 'your_wordpress_user_password' > secrets/wp_user_password.txt
+```
+
+These files are ignored by Git. At runtime, Docker Compose mounts them inside the containers under `/run/secrets/`.
 
 ---
 
@@ -37,6 +94,9 @@ Each service runs in an isolated container:
 * `nginx`
 * `wordpress`
 * `mariadb`
+* `redis`
+* `adminer`
+* `static`
 
 Containers are lightweight and share the host kernel.
 
@@ -47,7 +107,7 @@ Containers are lightweight and share the host kernel.
 Images are built using custom Dockerfiles:
 
 * Base image: `debian:12`
-* No pre-built images (nginx, wordpress, mariadb) are used
+* No pre-built images (nginx, wordpress, mariadb, redis, adminer, static) are used
 
 Each image:
 
@@ -65,12 +125,15 @@ The `docker-compose.yaml` file defines:
 * Volumes
 * Network
 * Environment variables
+* Docker secrets
 
-It allows running the full infrastructure with:
+It allows running the full infrastructure with Docker Compose directly:
 
 ```id="w9kz1x"
-docker compose up
+docker compose -f srcs/docker-compose.yaml up --build -d
 ```
+
+The preferred project interface is the `Makefile`.
 
 ---
 
@@ -171,7 +234,7 @@ Uses Docker network DNS resolution.
 
 ## Volumes (Persistence)
 
-Bind mounts are used:
+Docker named volumes are configured with the local driver and bind-mounted to host directories:
 
 ```id="kq0p5d"
 /home/<login>/data/mariadb
@@ -182,12 +245,20 @@ This ensures:
 
 * Data persists after container restart
 * Data survives VM reboot
+* WordPress files and MariaDB database files can be located on the host
+
+Volume mapping:
+
+* `mariadb` volume -> `/home/<login>/data/mariadb`
+* `wordpress` volume -> `/home/<login>/data/wordpress`
+
+The `make fclean` command removes Docker volumes and the host data directories, so it deletes persistent project data.
 
 ---
 
-## Environment Variables
+## Runtime Configuration and Secrets
 
-All sensitive data is stored in:
+Non-sensitive runtime configuration is stored in:
 
 ```id="q3zt9m"
 srcs/.env
@@ -195,8 +266,25 @@ srcs/.env
 
 Used for:
 
-* Database credentials
-* WordPress configuration
+* Domain name
+* Database name
+* Usernames and emails
+* Redis host and port
+
+Sensitive values are stored as local Docker secret files under `secrets/` and mounted into containers under `/run/secrets/`.
+
+Secrets used by the project:
+
+* `mysql_password`
+* `mysql_root_password`
+* `wp_admin_password`
+* `wp_user_password`
+
+Used for:
+
+* Database passwords
+* WordPress admin password
+* WordPress regular user password
 
 ---
 
@@ -205,10 +293,37 @@ Used for:
 The Makefile simplifies commands:
 
 ```id="3k6p0y"
-make up      → build and start
-make down    → stop containers
-make fclean  → remove containers + volumes
-make re      → rebuild everything
+make up      -> create data directories, build images, and start containers
+make down    -> stop containers
+make build   -> build images
+make logs    -> follow container logs
+make ps      -> list project containers
+make clean   -> stop containers
+make fclean  -> remove containers, Docker volumes, and host data directories
+make re      -> rebuild everything from a clean state
+```
+
+---
+
+## Docker Compose Commands
+
+Equivalent Docker Compose commands are useful when debugging:
+
+```sh
+docker compose -f srcs/docker-compose.yaml config
+docker compose -f srcs/docker-compose.yaml up --build -d
+docker compose -f srcs/docker-compose.yaml ps
+docker compose -f srcs/docker-compose.yaml logs -f
+docker compose -f srcs/docker-compose.yaml down
+docker compose -f srcs/docker-compose.yaml down -v
+```
+
+Container and volume inspection:
+
+```sh
+docker ps
+docker volume ls
+docker network ls
 ```
 
 ---
@@ -228,6 +343,7 @@ make re      → rebuild everything
 * Use of Docker network for service discovery
 * Use of volumes for persistence
 * Use of environment variables for configuration
+* Use of Docker secrets for passwords
 * HTTPS-only exposure (port 443)
 
 ---

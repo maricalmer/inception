@@ -2,6 +2,19 @@
 
 set -e
 
+read_secret() {
+    local path="$1"
+
+    if [ ! -f "$path" ]; then
+        echo "Missing Docker secret: $path" >&2
+        exit 1
+    fi
+    tr -d '\r\n' < "$path"
+}
+
+MYSQL_PASSWORD="$(read_secret /run/secrets/mysql_password)"
+MYSQL_ROOT_PASSWORD="$(read_secret /run/secrets/mysql_root_password)"
+
 mkdir -p /run/mysqld
 chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
