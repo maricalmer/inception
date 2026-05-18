@@ -36,13 +36,14 @@ if [ ! -f wp-config.php ]; then
     echo "Downloading WordPress..."
     $WP_CLI core download
 
-    echo "Creating wp-config.php..."
+    echo "Creating wp-config.php with the database connection settings..."
     $WP_CLI config create \
         --dbname="${MYSQL_DATABASE}" \
         --dbuser="${MYSQL_USER}" \
         --dbpass="${MYSQL_PASSWORD}" \
         --dbhost="mariadb:3306"
 
+    echo "Add Redis cache settings..."
     $WP_CLI config set WP_REDIS_HOST "${REDIS_HOST}"
     $WP_CLI config set WP_REDIS_PORT "${REDIS_PORT}" --raw
     $WP_CLI config set WP_CACHE true --raw

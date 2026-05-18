@@ -6,12 +6,11 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Override PHP-FPM config
 COPY conf/www.conf /etc/php/8.2/fpm/pool.d/www.conf
 
 RUN mkdir -p /run/php /var/www/adminer
 
-RUN curl -L https://www.adminer.org/latest.php -o /var/www/adminer/index.php
+RUN curl -L -o /var/www/adminer/index.php https://www.adminer.org/latest.php
 
 RUN chown -R www-data:www-data /var/www/adminer
 

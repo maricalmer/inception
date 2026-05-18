@@ -22,6 +22,8 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
     mariadb-install-db --user=mysql --datadir=/var/lib/mysql > /dev/null
 fi
 
+# Use a local socket during bootstrap so MariaDB is not reachable on the
+# Docker network before users are configured
 mysqld --user=mysql --skip-networking --socket=/run/mysqld/mysqld.sock &
 pid="$!"
 

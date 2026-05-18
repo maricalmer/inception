@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN mkdir -p /etc/nginx/ssl /run/nginx
 
-RUN openssl req -x509 -nodes -days 365 \
+RUN openssl req -x509 -noenc -days 365 \
     -newkey rsa:2048 \
     -keyout /etc/nginx/ssl/inception.key \
     -out /etc/nginx/ssl/inception.crt \
